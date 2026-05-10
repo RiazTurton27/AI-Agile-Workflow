@@ -1,4 +1,4 @@
-# AI-Agile Multi-Agent Plugin · v3
+# AI-Agile Multi-Agent Workflow
 
 A self-improving, adversarially-validated delivery workflow for [Claude Code](https://claude.ai/code).  
 Each phase generates output, challenges its own assumptions, and improves before anything moves forward.
