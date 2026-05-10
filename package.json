@@ -1,0 +1,32 @@
+{
+  "name": "agile-plugin",
+  "version": "3.0.0",
+  "description": "AI-Agile multi-agent workflow plugin for Claude Code",
+  "bin": {
+    "agile-plugin": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "templates/"
+  ],
+  "scripts": {
+    "prepublishOnly": "node scripts/validate-templates.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agile",
+    "ai",
+    "multi-agent",
+    "scrum"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RiazTurton27/AI-Agile-Workflow.git"
+  },
+  "homepage": "https://riazturton27.github.io/AI-Agile-Workflow"
+}

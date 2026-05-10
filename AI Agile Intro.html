@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/iconfont/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --color-text-primary: #111;
+    --color-text-secondary: #555;
+    --color-text-tertiary: #999;
+    --color-background-primary: #fff;
+    --color-background-secondary: #f5f5f5;
+    --color-border-secondary: #d0d0d0;
+    --color-border-tertiary: #e5e5e5;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-text-primary: #f0f0f0;
+      --color-text-secondary: #aaa;
+      --color-text-tertiary: #666;
+      --color-background-primary: #1a1a1a;
+      --color-background-secondary: #242424;
+      --color-border-secondary: #383838;
+      --color-border-tertiary: #2e2e2e;
+    }
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem 3rem;
+  }
+
+  .page { width: 100%; max-width: 660px; }
+
+  /* ── Tag ── */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Hero ── */
+  .headline {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.25;
+    margin-bottom: .5rem;
+  }
+  .subline {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+    margin-bottom: 2.5rem;
+    max-width: 520px;
+  }
+
+  /* ── Divider ── */
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 2rem 0; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--color-text-tertiary);
+    margin-bottom: 1rem;
+  }
+
+  /* ── Phase cards ── */
+  .phases { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+
+  .phase-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.1rem;
+  }
+  .phase-num { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); margin-bottom: .4rem; }
+  .phase-icon { font-size: 20px; color: var(--color-text-secondary); margin-bottom: .5rem; display: block; }
+  .phase-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: .35rem; }
+  .phase-plain { font-size: 13px; color: var(--color-text-secondary); line-height: 1.55; }
+  .phase-analogy { font-size: 12px; color: var(--color-text-tertiary); margin-top: .5rem; font-style: italic; }
+
+  /* ── Four Laws ── */
+  .laws { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 2rem; }
+
+  .law {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: .75rem 1rem;
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
+  }
+  .law-icon { font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 1px; }
+  .law-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .law-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+
+  /* ── Challenger ── */
+  .challenger {
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .challenger-icon { font-size: 24px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px; }
+  .challenger-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: .35rem; }
+  .challenger-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+  .challenger-q {
+    font-size: 13px;
+    color: var(--color-text-primary);
+    font-style: italic;
+    margin-top: .5rem;
+    padding-left: .75rem;
+    border-left: 2px solid var(--color-border-secondary);
+  }
+
+  /* ── Handoff schema ── */
+  .schema-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 1rem 1.1rem;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+  }
+  .schema-icon { font-size: 20px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px; }
+  .schema-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: .3rem; }
+  .schema-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.55; }
+
+  /* ── Flow pills ── */
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: .65rem; }
+  .flow-step {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+  .flow-step.challenge { border-color: var(--color-border-secondary); color: var(--color-text-primary); }
+  .flow-arr { font-size: 11px; color: var(--color-text-tertiary); }
+
+  /* ── Footer ── */
+  .footer {
+    padding-top: 1.25rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left { font-size: 12px; color: var(--color-text-tertiary); line-height: 1.5; }
+  .footer-right { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .phases, .laws { grid-template-columns: 1fr; }
+    .headline { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tag">Plain language overview</div>
+  <h1 class="headline">How the AI-Agile agent works</h1>
+  <p class="subline">You have a team of AI helpers. Each one has one job. They pass a short note to each other instead of retelling the whole story every time. And before anything moves forward, one helper's only job is to ask: <em>what if we're wrong?</em></p>
+
+  <p class="section-label">The four phases</p>
+  <div class="phases">
+    <div class="phase-card">
+      <div class="phase-num">Phase 1</div>
+      <i class="ti ti-bulb phase-icon"></i>
+      <div class="phase-title">Figure out what to build</div>
+      <div class="phase-plain">Before touching anything, write down what the thing is, who it's for, and what winning looks like.</div>
+      <div class="phase-analogy">Like drawing your dream treehouse before picking up a single plank.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 2</div>
+      <i class="ti ti-blueprint phase-icon"></i>
+      <div class="phase-title">Work out how to build it</div>
+      <div class="phase-plain">Break the big idea into smaller jobs. Figure out which jobs need to happen before others. Write down the rules the builders must follow.</div>
+      <div class="phase-analogy">Like sorting out the instruction booklet before opening the LEGO box.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 3</div>
+      <i class="ti ti-hammer phase-icon"></i>
+      <div class="phase-title">Build it, piece by piece</div>
+      <div class="phase-plain">Pick the most important jobs. Build them. Check they work. Then pick the next batch. Testing happens alongside building — never at the end.</div>
+      <div class="phase-analogy">Like building one room of the treehouse at a time, checking it's solid before adding the next.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase

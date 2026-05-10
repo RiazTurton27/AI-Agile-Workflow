@@ -1,0 +1,154 @@
+
+<style>
+  h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans)}
+  .page{padding:2.5rem 2rem 3rem;max-width:680px}
+  .tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);border-radius:20px;padding:4px 12px;margin-bottom:1.5rem}
+  .headline{font-size:28px;font-weight:500;color:var(--color-text-primary);line-height:1.25;margin-bottom:.5rem}
+  .subline{font-size:15px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:2.5rem;max-width:520px}
+  .divider{height:0.5px;background:var(--color-border-tertiary);margin:2rem 0}
+  .section-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-tertiary);margin-bottom:1rem}
+  .phases{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:2rem}
+  .phase-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.1rem;position:relative}
+  .phase-num{font-size:11px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:.4rem}
+  .phase-icon{font-size:20px;color:var(--color-text-secondary);margin-bottom:.5rem;display:block}
+  .phase-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.35rem}
+  .phase-plain{font-size:13px;color:var(--color-text-secondary);line-height:1.55}
+  .phase-analogy{font-size:12px;color:var(--color-text-tertiary);margin-top:.5rem;font-style:italic}
+  .arrow-row{display:flex;align-items:center;justify-content:center;gap:8px;margin:-.5rem 0 1rem;color:var(--color-text-tertiary);font-size:13px}
+  .laws{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2rem}
+  .law{display:flex;gap:10px;align-items:flex-start;padding:.75rem 1rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary)}
+  .law-icon{font-size:18px;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+  .law-text{}
+  .law-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+  .law-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+  .challenger{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1.1rem 1.25rem;margin-bottom:2rem;display:flex;gap:14px;align-items:flex-start}
+  .challenger-icon{font-size:24px;color:var(--color-text-secondary);flex-shrink:0;margin-top:2px}
+  .challenger-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.35rem}
+  .challenger-desc{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+  .challenger-q{font-size:13px;color:var(--color-text-primary);font-style:italic;margin-top:.5rem;padding-left:.75rem;border-left:2px solid var(--color-border-secondary)}
+  .schema-row{display:flex;gap:12px;align-items:flex-start;padding:1rem 1.1rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:2rem}
+  .schema-icon{font-size:20px;color:var(--color-text-secondary);flex-shrink:0;margin-top:2px}
+  .schema-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.3rem}
+  .schema-desc{font-size:13px;color:var(--color-text-secondary);line-height:1.55}
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:.65rem}
+  .flow-step{font-size:11px;font-weight:500;color:var(--color-text-secondary);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:20px;padding:3px 10px}
+  .flow-arr{font-size:11px;color:var(--color-text-tertiary)}
+  .flow-step.challenge{border-color:var(--color-border-secondary);color:var(--color-text-primary)}
+  .footer{padding-top:1.25rem;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center}
+  .footer-left{font-size:12px;color:var(--color-text-tertiary);line-height:1.5}
+  .footer-right{font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+</style>
+
+<div class="page">
+  <h2 class="sr-only">AI-Agile multi-agent plugin explained simply</h2>
+
+  <div class="tag">Plain language overview</div>
+  <h1 class="headline">How the AI-Agile agent works</h1>
+  <p class="subline">You have a team of AI helpers. Each one has one job. They pass a short note to each other instead of retelling the whole story every time. And before anything moves forward, one helper's only job is to ask: <em>what if we're wrong?</em></p>
+
+  <p class="section-label">The four phases</p>
+  <div class="phases">
+    <div class="phase-card">
+      <div class="phase-num">Phase 1</div>
+      <i class="ti ti-bulb phase-icon" aria-hidden="true"></i>
+      <div class="phase-title">Figure out what to build</div>
+      <div class="phase-plain">Before touching anything, write down what the thing is, who it's for, and what winning looks like.</div>
+      <div class="phase-analogy">Like drawing your dream treehouse before picking up a single plank.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 2</div>
+      <i class="ti ti-blueprint phase-icon" aria-hidden="true"></i>
+      <div class="phase-title">Work out how to build it</div>
+      <div class="phase-plain">Break the big idea into smaller jobs. Figure out which jobs need to happen before others. Write down the rules the builders must follow.</div>
+      <div class="phase-analogy">Like sorting out the instruction booklet before opening the LEGO box.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 3</div>
+      <i class="ti ti-hammer phase-icon" aria-hidden="true"></i>
+      <div class="phase-title">Build it, piece by piece</div>
+      <div class="phase-plain">Pick the most important jobs. Build them. Check they work. Then pick the next batch. Testing happens alongside building — never at the end.</div>
+      <div class="phase-analogy">Like building one room of the treehouse at a time, checking it's solid before adding the next.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 4</div>
+      <i class="ti ti-rotate-clockwise phase-icon" aria-hidden="true"></i>
+      <div class="phase-title">Learn and get smarter</div>
+      <div class="phase-plain">After each build, look back at what went wrong or got confusing. Find the pattern. Update the rules so the same mistake doesn't happen twice.</div>
+      <div class="phase-analogy">Like writing notes on your treehouse drawings so next time goes better.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="section-label">The rules every helper follows</p>
+  <div class="laws">
+    <div class="law">
+      <i class="ti ti-brain law-icon" aria-hidden="true"></i>
+      <div class="law-text">
+        <div class="law-name">Think first</div>
+        <div class="law-desc">Say what you're assuming. If confused, stop and ask. Never just guess and carry on.</div>
+      </div>
+    </div>
+    <div class="law">
+      <i class="ti ti-minimize law-icon" aria-hidden="true"></i>
+      <div class="law-text">
+        <div class="law-name">Keep it simple</div>
+        <div class="law-desc">Only do what was asked. Don't add extra stuff nobody asked for. If it can be shorter, make it shorter.</div>
+      </div>
+    </div>
+    <div class="law">
+      <i class="ti ti-scalpel law-icon" aria-hidden="true"></i>
+      <div class="law-text">
+        <div class="law-name">Only touch your bit</div>
+        <div class="law-desc">Don't "fix" things you weren't asked to fix. If you see a problem outside your job, say so — don't touch it.</div>
+      </div>
+    </div>
+    <div class="law">
+      <i class="ti ti-target law-icon" aria-hidden="true"></i>
+      <div class="law-text">
+        <div class="law-name">Know what done looks like</div>
+        <div class="law-desc">Before starting, write down exactly how you'll know you're finished. Vague goals mean endless loops.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="section-label">The most important helper</p>
+  <div class="challenger">
+    <i class="ti ti-alert-triangle challenger-icon" aria-hidden="true"></i>
+    <div>
+      <div class="challenger-title">The challenger — every phase has one</div>
+      <div class="challenger-desc">Most helpers build things. The challenger's only job is to poke holes before anything moves forward. They don't fix. They don't improve. They ask one question:</div>
+      <div class="challenger-q">"What would have to be true for everything we just built to be completely wrong?"</div>
+      <div class="challenger-desc" style="margin-top:.65rem">If the answer is scary, everything stops until a human resolves it. If it's a small risk, it gets written down and watched. Nothing sneaks through unchallenged.</div>
+    </div>
+  </div>
+
+  <p class="section-label">How helpers talk to each other</p>
+  <div class="schema-row">
+    <i class="ti ti-file-text schema-icon" aria-hidden="true"></i>
+    <div>
+      <div class="schema-title">The short note (Handoff Schema)</div>
+      <div class="schema-desc">Instead of each helper reading the entire conversation from the beginning, the team leader hands them a short structured note with only what they need for their job. This keeps things fast and stops helpers getting confused by information that isn't relevant to them.</div>
+      <div class="flow">
+        <span class="flow-step">Capture input</span>
+        <span class="flow-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-step">Generate</span>
+        <span class="flow-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-step challenge">★ Challenge</span>
+        <span class="flow-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-step">Improve</span>
+        <span class="flow-arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-step">Human check</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">Each phase runs this loop.<br>The challenger ★ runs in every phase — including the one that patches the rules.</div>
+    <div class="footer-right">AI-Agile Plugin v3</div>
+  </div>
+</div>
