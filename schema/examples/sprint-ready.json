@@ -1,0 +1,121 @@
+{
+  "phase": "3",
+  "spec_version": "v1.0",
+  "status": "Sprint Ready",
+  "value_proposition": "Help solo developers run a structured agile workflow without a team, by automating the four phases through Claude Code.",
+  "scope_boundaries": [
+    "No real-time collaboration with multiple developers",
+    "No native integration with Jira API (paste-based handoff only)",
+    "No support for non-software projects"
+  ],
+  "open_assumptions": [
+    "Users will confirm phase gates manually"
+  ],
+  "epics": [
+    {
+      "id": "E1",
+      "name": "Phase 1 — Vision",
+      "features": ["F1.1 Intake validation", "F1.2 Executive brief generation"]
+    },
+    {
+      "id": "E2",
+      "name": "Phase 4 — Retrospective",
+      "features": ["F2.1 Pattern detection", "F2.2 Constitution patching"]
+    }
+  ],
+  "stories": [
+    {
+      "id": "S1",
+      "epic": "E1",
+      "statement": "As a solo developer, I want the intake subagent to surface ambiguities, so that I don't waste a sprint on a misunderstood brief.",
+      "tasks": [
+        "Database: none",
+        "API: /vision command handler",
+        "UI: slash-command output rendering",
+        "Integration: schema emit to .claude/state.json"
+      ],
+      "acceptance_criteria": [
+        "Given two interpretations of user input / When intake runs / Then both interpretations are listed and user is prompted to pick",
+        "Given a complete, unambiguous input / When intake runs / Then the validated intake block is emitted with no clarification request"
+      ],
+      "dor_status": "READY"
+    },
+    {
+      "id": "S2",
+      "epic": "E2",
+      "statement": "As a maintainer, I want CRITICAL patches flagged before they reach me, so that I don't accidentally approve a patch that breaks the next sprint.",
+      "tasks": [
+        "Database: none",
+        "API: retro-challenge dispatch",
+        "UI: per-patch verdict rendering",
+        "Integration: challenge_log append"
+      ],
+      "acceptance_criteria": [
+        "Given a patch with an unresolved assumption / When retro-challenge runs / Then severity is set to CRITICAL and challenge_status is added to the patch",
+        "Given a CRITICAL patch / When retro-improve is dispatched / Then retro-improve halts and reports the unresolved patch"
+      ],
+      "dor_status": "READY"
+    }
+  ],
+  "architectural_guardrails": [
+    "Clean Core: phase state lives in .claude/state.json; no business logic in slash-command markdown",
+    "Anti-pattern: agents must never write to CLAUDE.md directly"
+  ],
+  "integration_flags": [
+    "Schema instance must validate against schema/handoff-schema.json after every subagent emission"
+  ],
+  "sprint_goals": [
+    "Ship working /vision → /retro loop with one end-to-end example committed in schema/examples/"
+  ],
+  "challenge_log": [
+    {
+      "phase": "1",
+      "severity": "WATCH",
+      "dangerous_assumption": "Solo developers will pause to answer break questions instead of skipping them.",
+      "break_questions": [
+        "Have you used a workflow tool you regularly skipped steps in?",
+        "Would a forced halt make you abandon the tool entirely?"
+      ],
+      "resolution": "Monitored in sprint 1 retro.",
+      "resolved_by": "Human"
+    },
+    {
+      "phase": "2",
+      "severity": "CRITICAL",
+      "dangerous_assumption": "The Handoff Schema fields are sufficient to express retro patch state without a separate patches table.",
+      "break_questions": [
+        "What happens to FLAGGED patches that need to persist across sprints?",
+        "How are challenge_status values updated after the human approves a patch?"
+      ],
+      "resolution": "Added retro.flagged_patches and challenge_status field to patch shape.",
+      "resolved_by": "Human"
+    },
+    {
+      "phase": "3",
+      "severity": "WATCH",
+      "dangerous_assumption": "Two stories will deliver the sprint goal in one iteration.",
+      "break_questions": [
+        "Has anyone on the team built a Claude Code plugin end-to-end before?",
+        "Is the schema validation script truly a half-day task or a one-week task?"
+      ],
+      "resolution": "Estimate confirmed; risk acknowledged in next_sprint_flags.",
+      "resolved_by": "Human"
+    }
+  ],
+  "improvement_log": [
+    "P1: trimmed brief by 22%",
+    "P2: merged duplicate acceptance criteria across S1 and S2",
+    "P3: removed redundant 'definition of done' prose now captured in dor_status"
+  ],
+  "retro": {
+    "sprint_ref": "",
+    "patterns_detected": [],
+    "law_violations": { "law1": [], "law2": [], "law3": [], "law4": [] },
+    "unresolved_challenges": [],
+    "constitution_patches": [],
+    "flagged_patches": [],
+    "next_sprint_flags": [
+      "WATCH: schema validation script estimate may be optimistic — track actual hours vs estimate"
+    ]
+  }
+}

@@ -10,10 +10,18 @@
     "templates/"
   ],
   "scripts": {
-    "prepublishOnly": "node scripts/validate-templates.js"
+    "sync":          "node scripts/sync-claude.js",
+    "sync:check":    "node scripts/sync-claude.js --check",
+    "validate":     "node scripts/validate-templates.js",
+    "validate:schema": "node scripts/validate-schema.js schema/examples/phase1-complete.json schema/examples/sprint-ready.json",
+    "test":          "npm run validate && npm run sync:check && npm run validate:schema",
+    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
   },
   "keywords": [
     "claude",

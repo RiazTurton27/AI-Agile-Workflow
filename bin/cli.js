@@ -7,10 +7,14 @@ const rl   = require('readline');
 
 // ── Package + paths ────────────────────────────────────────────────────────────
 
-const PKG          = require('../package.json');
-const TEMPLATES    = path.join(__dirname, '..', 'templates');
+const PKG       = require('../package.json');
+const TEMPLATES = path.join(__dirname, '..', 'templates');
 
 // ── Phase manifest ─────────────────────────────────────────────────────────────
+//
+// Each entry is either:
+//   'phase1/vision.md'    → command file: src from templates/commands/, dest to .claude/commands/
+//   'workflows/phase1.md' → workflow file: src from templates/workflows/, dest to .claude/workflows/
 
 const PHASES = {
   1: [
@@ -19,6 +23,7 @@ const PHASES = {
     'phase1/vision-brief.md',
     'phase1/vision-challenge.md',
     'phase1/vision-improve.md',
+    'workflows/phase1.md',
   ],
   2: [
     'phase2/architect.md',
@@ -26,6 +31,7 @@ const PHASES = {
     'phase2/arch-stories.md',
     'phase2/arch-challenge.md',
     'phase2/arch-improve.md',
+    'workflows/phase2.md',
   ],
   3: [
     'phase3/sprint.md',
@@ -33,6 +39,7 @@ const PHASES = {
     'phase3/sprint-dor.md',
     'phase3/sprint-challenge.md',
     'phase3/sprint-improve.md',
+    'workflows/phase3.md',
   ],
   4: [
     'phase4/retro.md',
@@ -40,6 +47,7 @@ const PHASES = {
     'phase4/retro-prescribe.md',
     'phase4/retro-challenge.md',
     'phase4/retro-improve.md',
+    'workflows/phase4.md',
   ],
 };
 
@@ -75,21 +83,21 @@ const out = {
 
 function parseArgs(argv) {
   const opts = {
-    phases:          [1, 2, 3, 4],
-    force:           false,
+    phases:           [1, 2, 3, 4],
+    force:            false,
     skipConstitution: false,
-    yes:             false,
-    help:            false,
-    version:         false,
+    yes:              false,
+    help:             false,
+    version:          false,
   };
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--force'            || a === '-f') opts.force            = true;
-    if (a === '--skip-constitution'             ) opts.skipConstitution = true;
-    if (a === '--yes'              || a === '-y') opts.yes              = true;
-    if (a === '--help'             || a === '-h') opts.help             = true;
-    if (a === '--version'          || a === '-v') opts.version          = true;
+    if (a === '--force'             || a === '-f') opts.force            = true;
+    if (a === '--skip-constitution'             ) opts.skipConstitution  = true;
+    if (a === '--yes'               || a === '-y') opts.yes              = true;
+    if (a === '--help'              || a === '-h') opts.help             = true;
+    if (a === '--version'           || a === '-v') opts.version          = true;
     if (a === '--phase') {
       const raw = argv[++i] ?? '';
       const parsed = raw.split(',')
@@ -112,6 +120,25 @@ function ensureDir(dir) {
 }
 
 /**
+ * Resolve src + dest for a PHASES entry.
+ * Entries starting with 'workflows/' are workflow files; all others are command files.
+ */
+function resolveEntry(rel, cwd) {
+  const isWorkflow = rel.startsWith('workflows/');
+  const filename   = isWorkflow ? path.basename(rel) : rel;
+  const src  = isWorkflow
+    ? path.join(TEMPLATES, 'workflows', filename)
+    : path.join(TEMPLATES, 'commands', filename);
+  const dest = isWorkflow
+    ? path.join(cwd, '.claude', 'workflows', filename)
+    : path.join(cwd, '.claude', 'commands', filename);
+  const display = isWorkflow
+    ? `.claude/workflows/${filename}`
+    : `.claude/commands/${filename}`;
+  return { src, dest, display };
+}
+
+/**
  * Copy src → dest.
  * Returns 'created' | 'overwritten' | 'skipped'
  */
@@ -124,7 +151,7 @@ function copyFile(src, dest, force) {
 }
 
 function labelFor(status) {
-  if (status === 'created')    return `${c.green}created${c.reset}`;
+  if (status === 'created')     return `${c.green}created${c.reset}`;
   if (status === 'overwritten') return `${c.yellow}overwritten${c.reset}`;
   return `${c.gray}skipped${c.reset}`;
 }
@@ -136,44 +163,43 @@ function install(cwd, opts) {
 
   function record(status) { tally[status] = (tally[status] ?? 0) + 1; }
 
-  // ── CLAUDE.md ──────────────────────────────────────────────────────────────
-  const constitutionDest = path.join(cwd, 'CLAUDE.md');
+  function installFile(src, dest, display) {
+    try {
+      const status = copyFile(src, dest, opts.force);
+      if (status === 'skipped') {
+        out.skip(display);
+      } else {
+        out.ok(`${display}  ${labelFor(status)}`);
+      }
+      record(status);
+    } catch (e) {
+      out.err(`${display}  — ${e.message}`);
+      record('failed');
+    }
+  }
 
+  // ── CLAUDE.md ──────────────────────────────────────────────────────────────
   if (opts.skipConstitution) {
     out.skip('CLAUDE.md  (--skip-constitution)');
     record('skipped');
   } else {
-    const src = path.join(TEMPLATES, 'CLAUDE.md');
-    try {
-      const status = copyFile(src, constitutionDest, opts.force);
-      if (status === 'skipped') {
-        out.skip('CLAUDE.md  (already exists — use --force to overwrite)');
-      } else {
-        out.ok(`CLAUDE.md  ${labelFor(status)}`);
-      }
-      record(status);
-    } catch (e) {
-      out.err(`CLAUDE.md  — ${e.message}`);
-      record('failed');
+    const src  = path.join(TEMPLATES, 'CLAUDE.md');
+    const dest = path.join(cwd, 'CLAUDE.md');
+    const display = 'CLAUDE.md';
+    if (fs.existsSync(dest) && !opts.force) {
+      out.skip('CLAUDE.md  (already exists — use --force to overwrite)');
+      record('skipped');
+    } else {
+      installFile(src, dest, display);
     }
   }
 
   out.br();
 
-  // ── agile-start.md ─────────────────────────────────────────────────────────
-  const startSrc  = path.join(TEMPLATES, 'commands', 'agile-start.md');
-  const startDest = path.join(cwd, '.claude', 'commands', 'agile-start.md');
-  try {
-    const status = copyFile(startSrc, startDest, opts.force);
-    if (status === 'skipped') {
-      out.skip('.claude/commands/agile-start.md');
-    } else {
-      out.ok(`.claude/commands/agile-start.md  ${labelFor(status)}`);
-    }
-    record(status);
-  } catch (e) {
-    out.err(`agile-start.md  — ${e.message}`);
-    record('failed');
+  // ── Base files (agile-start command + agile-start workflow) ───────────────
+  for (const rel of ['agile-start.md', 'workflows/agile-start.md']) {
+    const { src, dest, display } = resolveEntry(rel, cwd);
+    installFile(src, dest, display);
   }
 
   // ── Phase files ────────────────────────────────────────────────────────────
@@ -183,21 +209,8 @@ function install(cwd, opts) {
     console.log(`  ${c.dim}Phase ${phase}${c.reset}`);
 
     for (const rel of files) {
-      const src  = path.join(TEMPLATES, 'commands', rel);
-      const dest = path.join(cwd, '.claude', 'commands', rel);
-      const display = `.claude/commands/${rel}`;
-      try {
-        const status = copyFile(src, dest, opts.force);
-        if (status === 'skipped') {
-          out.skip(display);
-        } else {
-          out.ok(`${display}  ${labelFor(status)}`);
-        }
-        record(status);
-      } catch (e) {
-        out.err(`${display}  — ${e.message}`);
-        record('failed');
-      }
+      const { src, dest, display } = resolveEntry(rel, cwd);
+      installFile(src, dest, display);
     }
   }
 

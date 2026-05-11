@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Bash(node *)",
+      "Bash(npm publish *)",
+      "Bash(npm pkg *)",
+      "Bash(tar -tzf ~/Downloads/alt1-adoption.tar.gz)",
+      "Bash(npm install *)"
+    ]
+  }
+}

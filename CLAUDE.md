@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-A Claude Code slash-command plugin that runs software projects through a four-phase AI-Agile workflow: Vision → Architecture → Sprint Planning → Retrospective. Each phase dispatches four subagents in strict sequence (Generate → Generate → Challenge → Improve) and passes context exclusively through a structured Handoff Schema.
+A four-phase AI-Agile workflow: Vision → Architecture → Sprint Planning → Retrospective. Each phase dispatches four subagents in strict sequence (Generate → Generate → Challenge → Improve) and passes context exclusively through a structured Handoff Schema.
 
 ---
 
@@ -64,6 +64,25 @@ Each phase runs four subagents in strict order:
 
 ---
 
+## Schema Validation
+
+Every subagent emits a Handoff Schema instance. The instance must validate
+against `schema/handoff-schema.json` (JSON Schema Draft 2020-12).
+
+After each subagent emission, the orchestrator must parse the emitted JSON
+and check it against the schema. If validation fails, halt and surface the
+failing field path to the user before proceeding.
+
+Local maintainers and CI can validate any saved snapshot offline:
+
+```bash
+node scripts/validate-schema.js path/to/snapshot.json
+```
+
+`npm test` validates the example schema instances in `schema/examples/`.
+
+---
+
 ## Context Management
 
 Subagents receive only the schema fields they need. Orchestrators compress each subagent's output into the Handoff Schema before dispatching the next subagent. **Never pass full conversation history between agents.**
@@ -89,18 +108,25 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
 - `sprint-improve` → full schema + Phase 3 `challenge_log` entry
 
 **Phase 4 (/retro):**
-- `retro-analyze` → `improvement_log`, `challenge_log`, `law_violations`
+- `retro-analyze` → `improvement_log`, `challenge_log`
 - `retro-prescribe` → `retro.patterns_detected` only
 - `retro-challenge` → `retro.constitution_patches` only
 - `retro-improve` → `retro.constitution_patches` (post-challenge) only
+
+`retro-analyze` produces `retro.law_violations` as part of its output — it is
+not an input. Read the formal schema at `schema/handoff-schema.json` for
+authoritative field definitions.
 
 ---
 
 ## Handoff Schema
 
+The authoritative definition lives at `schema/handoff-schema.json`. The block
+below is a human-readable summary; if the two disagree, the JSON Schema wins.
+
 ```json
 {
-  "phase": "[1 | 2 | 3]",
+  "phase": "[1 | 2 | 3 | 4]",
   "spec_version": "[v0.1 | v0.2 | v1.0]",
   "status": "[In Progress | Challenged | Awaiting Review | Approved | Sprint Ready]",
   "value_proposition": "",
@@ -117,7 +143,8 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
   "integration_flags": [],
   "sprint_goals": [],
   "challenge_log": [{
-    "phase": "", "severity": "[CRITICAL | WATCH]",
+    "phase": "[1 | 2 | 3 | 4]",
+    "severity": "[CRITICAL | WATCH]",
     "dangerous_assumption": "",
     "break_questions": [],
     "resolution": "Unresolved",
@@ -131,49 +158,16 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
     "unresolved_challenges": [],
     "constitution_patches": [{
       "target_file": "", "patch_type": "[ADD | MODIFY | STRENGTHEN]",
-      "rationale": "", "patch_content": ""
+      "rationale": "", "patch_content": "",
+      "challenge_status": "[APPROVED | CRITICAL | WATCH]"
     }],
+    "flagged_patches": [],
     "next_sprint_flags": []
   }
 }
 ```
 
 `spec_version` increments: `v0.1` (end of Phase 1) → `v0.2` (end of Phase 2) → `v1.0` (Sprint Ready).
-
----
-
-## Command File Structure
-
-All 21 command files live in `.claude/commands/`. The canonical content for each file is in `claude_code_agile_plugin.md` — this is the source of truth when populating placeholder files.
-
-```
-.claude/commands/
-├── agile-start.md          ← Master Orchestrator
-├── phase1/
-│   ├── vision.md           ← Phase 1 Orchestrator
-│   ├── vision-intake.md    ← Subagent A: validates input, no brief generation
-│   ├── vision-brief.md     ← Subagent B: Executive Product Brief
-│   ├── vision-challenge.md ← Subagent C ★: Adversarial Challenger
-│   └── vision-improve.md   ← Subagent D: Four Laws audit, max 2 iterations
-├── phase2/
-│   ├── architect.md        ← Phase 2 Orchestrator
-│   ├── arch-epics.md       ← Subagent A: Epics + guardrails only (no stories)
-│   ├── arch-stories.md     ← Subagent B: Stories, tasks, acceptance criteria
-│   ├── arch-challenge.md   ← Subagent C ★
-│   └── arch-improve.md     ← Subagent D
-├── phase3/
-│   ├── sprint.md           ← Phase 3 Orchestrator
-│   ├── sprint-plan.md      ← Subagent A: Sprint Goals + ordered backlog
-│   ├── sprint-dor.md       ← Subagent B: DoR audit + Kanban flow
-│   ├── sprint-challenge.md ← Subagent C ★
-│   └── sprint-improve.md   ← Subagent D
-└── phase4/
-    ├── retro.md            ← Retro Orchestrator
-    ├── retro-analyze.md    ← Subagent A: pattern detection (needs 2+ evidence entries)
-    ├── retro-prescribe.md  ← Subagent B: surgical patches only (max 3 lines each)
-    ├── retro-challenge.md  ← Subagent C ★: challenges the patches themselves
-    └── retro-improve.md    ← Subagent D: approves or flags patches
-```
 
 ---
 
@@ -193,26 +187,111 @@ The output of `/sprint` (`status: Sprint Ready`, `spec_version: v1.0`) is design
 
 ---
 
+## File Architecture
+
+This plugin uses a two-layer file structure. Commands are thin dispatchers;
+all phase behaviour lives in workflow files.
+
+```
+.claude/
+  commands/                    ← thin dispatchers (3 lines each, user-facing)
+    agile-start.md             → reads .claude/workflows/agile-start.md
+    phase1/vision.md           → reads .claude/workflows/phase1.md
+    phase2/architect.md        → reads .claude/workflows/phase2.md
+    phase3/sprint.md           → reads .claude/workflows/phase3.md
+    phase4/retro.md            → reads .claude/workflows/phase4.md
+    phase1/vision-intake.md    ← subagent A behaviour (referenced by workflow)
+    phase1/vision-brief.md     ← subagent B behaviour
+    phase1/vision-challenge.md ← subagent C behaviour (Challenger)
+    phase1/vision-improve.md   ← subagent D behaviour
+    phase2/ phase3/ phase4/    ← same pattern for each phase
+  workflows/                   ← source of behaviour (edit here, not in commands)
+    agile-start.md             ← activation + session recovery logic
+    phase1.md                  ← Phase 1 orchestration + disk write spec
+    phase2.md                  ← Phase 2 orchestration + disk write spec
+    phase3.md                  ← Phase 3 orchestration + disk write spec
+    phase4.md                  ← Phase 4 orchestration + disk write spec
+
+.planning/                     ← persistent state (committed to git)
+  VISION.md                    ← Phase 1 human-readable output
+  ARCHITECTURE.md              ← Phase 2 human-readable output
+  handoff-schema.json          ← Handoff Schema instance (updated each phase)
+  sprints/
+    sprint-01/
+      PLAN.md                  ← Sprint Readiness Package
+      KANBAN.md                ← Kanban column definitions
+  retrospectives/
+    retro-01/
+      PATTERNS.md              ← Pattern analysis
+      PATCHES.md               ← Applied and deferred patches
+```
+
+**Do not edit command orchestrators** (e.g. `phase1/vision.md`) — they are
+thin dispatchers. Edit the corresponding `.claude/workflows/phase1.md` instead.
+
+---
+
+## Persistent State (.planning/)
+
+Phase outputs are written to `.planning/` and committed to git. This means:
+
+- Sessions survive context resets. Run `/agile-start` to recover position.
+- Phase N reads from disk at the start, not from in-context memory, so
+  cross-session handoffs are reliable.
+- Progress is reviewable as git diffs.
+
+The `.planning/handoff-schema.json` file is the machine-readable state.
+The markdown files (`VISION.md`, `ARCHITECTURE.md`, sprint plans, retro
+reports) are human-readable summaries for stakeholder review.
+
+---
+
 ## Developing this plugin
 
 ### Source of truth
 
-`claude_code_agile_plugin.md` in the repo root is the **canonical content** for all 22 command files. The `.claude/commands/` files are currently placeholders (`# PLACEHOLDER — paste content from spec`). Populate them by copying the corresponding file content from the spec document.
+`templates/CLAUDE.md` is the canonical end-user constitution. The root
+`CLAUDE.md` you are reading is **generated** by appending this file to
+`templates/CLAUDE.md`. Do not edit root `CLAUDE.md` by hand — your changes
+will be overwritten the next time `scripts/sync-claude.js` runs.
 
-### Distribution architecture
+To edit shared content: change `templates/CLAUDE.md`.
+To edit developer-only content: change `scripts/dev-section.md`.
+Then run: `node scripts/sync-claude.js`.
+
+CI / `prepublishOnly` runs `node scripts/sync-claude.js --check` and fails
+if the two are out of sync.
+
+### Two-layer architecture
+
+Commands are thin dispatchers; workflow files contain all phase behaviour.
+When editing the workflow for a phase, edit the `templates/workflows/` file
+then sync it to `.claude/workflows/`. Never put behaviour in command files.
 
 ```
-templates/           ← what npm publishes (mirrors .claude/commands/)
+templates/                 ← what npm publishes
   CLAUDE.md
   commands/
-    agile-start.md
-    phase1/  phase2/  phase3/  phase4/
+    agile-start.md         ← thin dispatcher (3 lines)
+    phase1/vision.md       ← thin dispatcher
+    phase1/vision-intake.md    ← subagent behaviour (unchanged)
+    ...
+  workflows/
+    agile-start.md         ← full behaviour source
+    phase1.md
+    phase2.md
+    phase3.md
+    phase4.md
 
-.claude/commands/    ← working copies used directly in Claude Code
-bin/cli.js           ← npm installer CLI (source: npm_cli.js in repo root)
+.claude/commands/          ← working copies (mirrors templates/commands/)
+.claude/workflows/         ← working copies (mirrors templates/workflows/)
+schema/                    ← Handoff Schema definition + example instances
+scripts/                   ← sync + validation helpers
+bin/cli.js                 ← npm installer CLI
 ```
 
-When editing command files, update both `.claude/commands/` and `templates/commands/` in sync. The `templates/` directory is what end users receive when they run `npx agile-plugin init`.
+When editing workflow files: update both `templates/workflows/` (canonical)
+and `.claude/workflows/` (working copy) in sync.
 
 ### npm CLI usage (end-user install)
 
@@ -223,14 +302,25 @@ npx agile-plugin init --skip-constitution    # preserve existing CLAUDE.md
 npx agile-plugin init --force                # overwrite existing files
 ```
 
+The installer copies both `templates/commands/` and `templates/workflows/`
+into the user's project under `.claude/`.
+
 ### Publishing
 
 ```bash
 npm publish --access public
 ```
 
-This triggers `prepublishOnly`, which runs `node scripts/validate-templates.js`. That script does not yet exist — create it before publishing.
+This triggers `prepublishOnly`, which runs:
+1. `node scripts/validate-templates.js` — confirms all command and workflow
+   files are present and not placeholders; checks command orchestrators are
+   ≤ 10 lines (thin dispatcher rule enforced)
+2. `node scripts/sync-claude.js --check` — confirms root CLAUDE.md matches
+3. `node scripts/validate-schema.js schema/examples/*.json` — confirms the
+   schema definition validates the example instances
 
 ### Bug reports
 
-Issue template is at `.github/ISSUE_TEMPLATE/bug_report.md`. It captures: phase, subagent, challenge severity, schema state at failure, actual vs. expected output, and Claude Code version.
+Issue template is at `.github/ISSUE_TEMPLATE/bug_report.md`. It captures:
+phase, subagent, challenge severity, schema state at failure, actual vs.
+expected output, and Claude Code version.

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RiazTurton27/AI-Agile-Workflow/schema/handoff-schema.json",
+  "title": "AI-Agile Handoff Schema",
+  "description": "The single structured object that passes context between subagents across all four phases. Fields populate progressively as phases advance.",
+  "type": "object",
+  "required": ["phase", "spec_version", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "phase": {
+      "description": "The phase currently active. 1=Vision, 2=Architect, 3=Sprint, 4=Retro.",
+      "type": "string",
+      "enum": ["1", "2", "3", "4"]
+    },
+    "spec_version": {
+      "description": "Schema instance version. v0.1=end of Phase 1, v0.2=end of Phase 2, v1.0=Sprint Ready.",
+      "type": "string",
+      "enum": ["v0.1", "v0.2", "v1.0"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["In Progress", "Challenged", "Awaiting Review", "Approved", "Sprint Ready"]
+    },
+    "value_proposition": { "type": "string" },
+    "scope_boundaries":  { "type": "array", "items": { "type": "string" } },
+    "open_assumptions":  { "type": "array", "items": { "type": "string" } },
+
+    "epics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "features"],
+        "additionalProperties": false,
+        "properties": {
+          "id":       { "type": "string", "pattern": "^E[0-9]+$" },
+          "name":     { "type": "string", "minLength": 1 },
+          "features": { "type": "array",  "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "epic", "statement", "tasks", "acceptance_criteria", "dor_status"],
+        "additionalProperties": false,
+        "properties": {
+          "id":                  { "type": "string", "pattern": "^S[0-9]+$" },
+          "epic":                { "type": "string", "pattern": "^E[0-9]+$" },
+          "statement":           { "type": "string", "minLength": 1 },
+          "tasks":               { "type": "array",  "items": { "type": "string" } },
+          "acceptance_criteria": { "type": "array",  "items": { "type": "string" }, "minItems": 2 },
+          "dor_status":          { "type": "string", "pattern": "^(READY|NOT READY( — .+)?)$" }
+        }
+      }
+    },
+
+    "architectural_guardrails": { "type": "array", "items": { "type": "string" } },
+    "integration_flags":        { "type": "array", "items": { "type": "string" } },
+    "sprint_goals":             { "type": "array", "items": { "type": "string" }, "maxItems": 3 },
+
+    "challenge_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["phase", "severity", "dangerous_assumption", "break_questions", "resolution", "resolved_by"],
+        "additionalProperties": false,
+        "properties": {
+          "phase":                { "type": "string", "enum": ["1", "2", "3", "4"] },
+          "severity":             { "type": "string", "enum": ["CRITICAL", "WATCH"] },
+          "dangerous_assumption": { "type": "string", "minLength": 1 },
+          "break_questions":      { "type": "array",  "items": { "type": "string" }, "minItems": 2, "maxItems": 3 },
+          "resolution":           { "type": "string" },
+          "resolved_by":          { "type": "string", "enum": ["Human", "Orchestrator loop", "Deferred to Retro", "Pending"] }
+        }
+      }
+    },
+
+    "improvement_log": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "retro": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sprint_ref":          { "type": "string" },
+        "patterns_detected":   { "type": "array", "items": { "type": "string" } },
+        "law_violations": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "law1": { "type": "array", "items": { "type": "string" } },
+            "law2": { "type": "array", "items": { "type": "string" } },
+            "law3": { "type": "array", "items": { "type": "string" } },
+            "law4": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "unresolved_challenges": { "type": "array", "items": { "type": "string" } },
+        "constitution_patches": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/patch" }
+        },
+        "flagged_patches": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/patch" }
+        },
+        "next_sprint_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+
+  "$defs": {
+    "patch": {
+      "type": "object",
+      "required": ["target_file", "patch_type", "rationale", "assumption", "patch_content", "prevents"],
+      "additionalProperties": false,
+      "properties": {
+        "target_file":      { "type": "string", "minLength": 1 },
+        "patch_type":       { "type": "string", "enum": ["ADD", "MODIFY", "STRENGTHEN"] },
+        "rationale":        { "type": "string", "minLength": 1 },
+        "assumption":       { "type": "string", "minLength": 1 },
+        "patch_content":    { "type": "string", "minLength": 1, "description": "Max 3 lines; line count enforced by retro-improve." },
+        "prevents":         { "type": "string", "minLength": 1 },
+        "challenge_status": { "type": "string", "enum": ["APPROVED", "CRITICAL", "WATCH", "FLAGGED"] }
+      }
+    }
+  }
+}

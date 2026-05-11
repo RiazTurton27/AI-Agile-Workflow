@@ -1,0 +1,26 @@
+{
+  "phase": "5",
+  "spec_version": "v2.0",
+  "status": "Completed",
+  "challenge_log": [
+    {
+      "phase": "1",
+      "severity": "BLOCKER",
+      "dangerous_assumption": "",
+      "break_questions": ["only one question"],
+      "resolution": "fixed",
+      "resolved_by": "Bot"
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-1",
+      "epic": "epic-1",
+      "statement": "incomplete",
+      "tasks": [],
+      "acceptance_criteria": ["only one criterion"],
+      "dor_status": "MAYBE"
+    }
+  ],
+  "unknown_field": "should be rejected by additionalProperties: false"
+}

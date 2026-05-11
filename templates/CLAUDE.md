@@ -64,6 +64,25 @@ Each phase runs four subagents in strict order:
 
 ---
 
+## Schema Validation
+
+Every subagent emits a Handoff Schema instance. The instance must validate
+against `schema/handoff-schema.json` (JSON Schema Draft 2020-12).
+
+After each subagent emission, the orchestrator must parse the emitted JSON
+and check it against the schema. If validation fails, halt and surface the
+failing field path to the user before proceeding.
+
+Local maintainers and CI can validate any saved snapshot offline:
+
+```bash
+node scripts/validate-schema.js path/to/snapshot.json
+```
+
+`npm test` validates the example schema instances in `schema/examples/`.
+
+---
+
 ## Context Management
 
 Subagents receive only the schema fields they need. Orchestrators compress each subagent's output into the Handoff Schema before dispatching the next subagent. **Never pass full conversation history between agents.**
@@ -89,18 +108,25 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
 - `sprint-improve` → full schema + Phase 3 `challenge_log` entry
 
 **Phase 4 (/retro):**
-- `retro-analyze` → `improvement_log`, `challenge_log`, `law_violations`
+- `retro-analyze` → `improvement_log`, `challenge_log`
 - `retro-prescribe` → `retro.patterns_detected` only
 - `retro-challenge` → `retro.constitution_patches` only
 - `retro-improve` → `retro.constitution_patches` (post-challenge) only
+
+`retro-analyze` produces `retro.law_violations` as part of its output — it is
+not an input. Read the formal schema at `schema/handoff-schema.json` for
+authoritative field definitions.
 
 ---
 
 ## Handoff Schema
 
+The authoritative definition lives at `schema/handoff-schema.json`. The block
+below is a human-readable summary; if the two disagree, the JSON Schema wins.
+
 ```json
 {
-  "phase": "[1 | 2 | 3]",
+  "phase": "[1 | 2 | 3 | 4]",
   "spec_version": "[v0.1 | v0.2 | v1.0]",
   "status": "[In Progress | Challenged | Awaiting Review | Approved | Sprint Ready]",
   "value_proposition": "",
@@ -117,7 +143,8 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
   "integration_flags": [],
   "sprint_goals": [],
   "challenge_log": [{
-    "phase": "", "severity": "[CRITICAL | WATCH]",
+    "phase": "[1 | 2 | 3 | 4]",
+    "severity": "[CRITICAL | WATCH]",
     "dangerous_assumption": "",
     "break_questions": [],
     "resolution": "Unresolved",
@@ -131,8 +158,10 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
     "unresolved_challenges": [],
     "constitution_patches": [{
       "target_file": "", "patch_type": "[ADD | MODIFY | STRENGTHEN]",
-      "rationale": "", "patch_content": ""
+      "rationale": "", "patch_content": "",
+      "challenge_status": "[APPROVED | CRITICAL | WATCH]"
     }],
+    "flagged_patches": [],
     "next_sprint_flags": []
   }
 }
@@ -155,3 +184,62 @@ Subagents receive only the schema fields they need. Orchestrators compress each 
 ## Sprint Readiness Package
 
 The output of `/sprint` (`status: Sprint Ready`, `spec_version: v1.0`) is designed to be pasted directly into Jira, Azure DevOps, Linear, or GitHub Projects without reformatting.
+
+---
+
+## File Architecture
+
+This plugin uses a two-layer file structure. Commands are thin dispatchers;
+all phase behaviour lives in workflow files.
+
+```
+.claude/
+  commands/                    ← thin dispatchers (3 lines each, user-facing)
+    agile-start.md             → reads .claude/workflows/agile-start.md
+    phase1/vision.md           → reads .claude/workflows/phase1.md
+    phase2/architect.md        → reads .claude/workflows/phase2.md
+    phase3/sprint.md           → reads .claude/workflows/phase3.md
+    phase4/retro.md            → reads .claude/workflows/phase4.md
+    phase1/vision-intake.md    ← subagent A behaviour (referenced by workflow)
+    phase1/vision-brief.md     ← subagent B behaviour
+    phase1/vision-challenge.md ← subagent C behaviour (Challenger)
+    phase1/vision-improve.md   ← subagent D behaviour
+    phase2/ phase3/ phase4/    ← same pattern for each phase
+  workflows/                   ← source of behaviour (edit here, not in commands)
+    agile-start.md             ← activation + session recovery logic
+    phase1.md                  ← Phase 1 orchestration + disk write spec
+    phase2.md                  ← Phase 2 orchestration + disk write spec
+    phase3.md                  ← Phase 3 orchestration + disk write spec
+    phase4.md                  ← Phase 4 orchestration + disk write spec
+
+.planning/                     ← persistent state (committed to git)
+  VISION.md                    ← Phase 1 human-readable output
+  ARCHITECTURE.md              ← Phase 2 human-readable output
+  handoff-schema.json          ← Handoff Schema instance (updated each phase)
+  sprints/
+    sprint-01/
+      PLAN.md                  ← Sprint Readiness Package
+      KANBAN.md                ← Kanban column definitions
+  retrospectives/
+    retro-01/
+      PATTERNS.md              ← Pattern analysis
+      PATCHES.md               ← Applied and deferred patches
+```
+
+**Do not edit command orchestrators** (e.g. `phase1/vision.md`) — they are
+thin dispatchers. Edit the corresponding `.claude/workflows/phase1.md` instead.
+
+---
+
+## Persistent State (.planning/)
+
+Phase outputs are written to `.planning/` and committed to git. This means:
+
+- Sessions survive context resets. Run `/agile-start` to recover position.
+- Phase N reads from disk at the start, not from in-context memory, so
+  cross-session handoffs are reliable.
+- Progress is reviewable as git diffs.
+
+The `.planning/handoff-schema.json` file is the machine-readable state.
+The markdown files (`VISION.md`, `ARCHITECTURE.md`, sprint plans, retro
+reports) are human-readable summaries for stakeholder review.

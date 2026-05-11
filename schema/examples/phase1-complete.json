@@ -1,0 +1,37 @@
+{
+  "phase": "1",
+  "spec_version": "v0.1",
+  "status": "Awaiting Review",
+  "value_proposition": "Help solo developers run a structured agile workflow without a team, by automating the four phases through Claude Code.",
+  "scope_boundaries": [
+    "No real-time collaboration with multiple developers",
+    "No native integration with Jira API (paste-based handoff only)",
+    "No support for non-software projects"
+  ],
+  "open_assumptions": [
+    "Users have Claude Code installed and authenticated",
+    "Users are willing to confirm phase gates manually"
+  ],
+  "epics": [],
+  "stories": [],
+  "architectural_guardrails": [],
+  "integration_flags": [],
+  "sprint_goals": [],
+  "challenge_log": [
+    {
+      "phase": "1",
+      "severity": "WATCH",
+      "dangerous_assumption": "Solo developers will actually pause to answer break questions instead of skipping them.",
+      "break_questions": [
+        "Have you used a workflow tool you regularly skipped steps in?",
+        "Would a forced halt make you abandon the tool entirely?"
+      ],
+      "resolution": "Acknowledged; monitor sprint 1 retro for skip patterns.",
+      "resolved_by": "Human"
+    }
+  ],
+  "improvement_log": [
+    "Iteration 1: removed speculative 'enterprise tier' from value proposition",
+    "Iteration 2: trimmed brief by 22%"
+  ]
+}
